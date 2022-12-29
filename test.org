@@ -1,0 +1,35 @@
+* jorana.el - Reverse Literate setup using org-transclude.
+
+** Rational:
+There are downsides to the standard literate style config:
+- colaboration
+- need to have all code in file to tangle
+- 
+
+** workflow:
+In the .org buffer. to include code from file.
+
+
+<<tag-id:12407328>>
+#+begin_src elisp
+(defun toggle-id-regex ()
+  "Toggle the visibility of a regex that matches `#_(id:<number>)`."
+  (interactive)
+  (save-excursion
+    (goto-char (point-min))
+
+
+    (while (re-search-forward id-regex nil t)
+      (let ((invisible (get-text-property (match-beginning 0) 'invisible)))
+        (if invisible
+            (remove-text-properties (match-beginning 0) (match-end 0) '(invisible t))
+          (add-text-properties (match-beginning 0) (match-end 0) '(invisible t))))
+      (set-buffer-modified-p nil))))
+#+end_src
+
+[[tag-id:12407328][bob]]
+
+[[/Users/devcarbon/projects/jorana.el/tests.el::<bob bob>][tag-id:1672220814]] :src clojure :thing-at-point sexp
+
+#+transclude: [[file:/Users/devcarbon/projects/jorana.el/tests.el::<bob bob>][tag-id:1672220814]]  :src clojure :thing-at-point sexp
+
