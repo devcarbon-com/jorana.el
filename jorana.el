@@ -1,17 +1,23 @@
 ;;; package --- Summary
+;;; Package-Requires: ((names "") (emacs "24"))
 ;;; Commentary:
 ;;; Code:
 
 (provide 'jorana)
+(eval-when-compile (require 'names))
 
-(defun copy-current-file-link-as-org-transclusion-link ()
-  "Copy the org-transclusion link to the file visited by the most recently used buffer, and also yank the most recent item from the kill-ring into the current buffer."
+;;;###autoload
+(define-namespace jorana-
+
+(defun copy-current-file-link-as-org-transclusion-link () ;<id:1672306426>
+  "Insert and copy the org-transclusion link to the file 
+visited by the most recently used buffer into the current buffer."
   (interactive)
   (with-current-buffer (other-buffer (current-buffer) t)
     (let ((file-name (buffer-file-name)))
       (when file-name
         (kill-new (concat "#+transclude: [[file://" file-name "][" (file-name-nondirectory file-name) "]]"))
-        (message "Copied link to file as org-mode link: %s" file-name))))
+        (message "Copied link to file as org-transclusion link: %s" file-name))))
   (yank))
 
 (defun current-time-in-seconds ()
@@ -26,16 +32,8 @@
   (interactive)
   (insert (gen-id-tag)))
 
-(defun with-buffer-visiting (file func)
-  "Call FUNC with the buffer visiting FILE as the current buffer."
-  (let ((buffer (find-buffer-visiting file)))
-    (if buffer
-        (with-current-buffer buffer
-          (funcall func))
-      (error "No buffer visiting file %s" file))))
-
 (defun get-line-contents (line)
-  "Returns the line contents for LINE, with leading and trailing whitespace trimmed."
+  "Return the line contents for LINE, with leading and trailing whitespace trimmed."
   (let ((start (line-beginning-position line))
         (end (line-end-position line)))
     (string-trim (buffer-substring start end))))
@@ -43,10 +41,6 @@
 (defun remove-non-symbol-chars (string)
   "Replace all non-symbol characters in STRING with underscores."
   (replace-regexp-in-string "[^a-zA-Z0-9_]" "_" string))
-
-(defun insert-file-link () ;<id:1672242704>
-  (interactive)
-  (insert (plist-get (find-file-line-link) :link)))
 
 (defvar id-regex (concat "\\(#_\\|;\\|//\\|\\)\\( ?\\)\(?<id:.*?>\)?")
   "Regex that matches target tag comments.
@@ -113,19 +107,6 @@
   (end-of-line)
   (insert string))
 
-(defun extract-target-from-line (line &rest generate-when-missing comment-string)
-  "Extract the target from LINE using a regex that matches <<[anything]>>.
-where [anything] is one or more characters. Return an Org mode link to the target."
-  (let* ((line-text (buffer-substring (line-beginning-position) (line-end-position)))
-         (target (when (string-match "\\(<.*>\\)" line-text)
-                   (match-string 1 line-text))))
-    (cond ((stringp target) (substring-no-properties target))
-          (generate-when-missing
-           (let ((target (gen-id-tag)))
-             (append-to-line line (concat " ;" target))
-             target))
-          (:no-target-found line-number))))
-
 (defun target-at-point ()
   (interactive)
   (extract-target-from-line (line-number-at-pos (point)) t)
@@ -137,7 +118,7 @@ where [anything] is one or more characters. Return an Org mode link to the targe
   (let ((buffers (buffer-list)))
     (seq-filter (lambda (buffer) (not (string-prefix-p " " (buffer-name buffer)))) buffers)))
 
-(defun search-target-in-last-used-buffers* (target bullseye buffers)
+(defun search-target-in-last-used-buffers* (target bullseye buffers) ;<id:1672282124>
   "Search for the contents of TARGET at point in the last 5 used buffers.
 Jump to the first occurrence if found. BUFFERS is a list of buffers to search."
   (if target
@@ -159,17 +140,25 @@ Jump to the first occurrence if found. BUFFERS is a list of buffers to search."
         (message "Target not found in any of the last 5 used buffers."))
     (message "No target at point to search for.")))
 
-(defun search-target-in-last-used-buffers ()
+(defun search-target-in-last-used-buffers () ;<id:1672282092>
   (interactive)
   (search-target-in-last-used-buffers*
    (string-trim (substring-no-properties (thing-at-point 'line)))
    (current-column)
    (cl-subseq (current-non-hidden-buffers) 1 5)))
-search-target-in-last-used-buffers
 
-search-target-in-last-used-buffers
-
-
+(defun extract-target-from-line (line &rest generate-when-missing comment-string)
+  "Extract the target from LINE using a regex that matches <<[anything]>>.
+where [anything] is one or more characters. Return an Org mode link to the target."
+  (let* ((line-text (buffer-substring (line-beginning-position) (line-end-position)))
+         (target (when (string-match "\\(<.*>\\)" line-text)
+                   (match-string 1 line-text))))
+    (cond ((stringp target) (substring-no-properties target))
+          (generate-when-missing
+           (let ((target (gen-id-tag)))
+             (append-to-line line (concat " ;" target))
+             target))
+          (:no-target-found line-number))))
 
 (defun find-file-line-link () ;<id:1672243830>
   "Prompt the user to select a file using completion.
@@ -212,6 +201,11 @@ The returned plist contains the following keys:
                    (downcase (car mode-name))))))
     (insert (format "#+transclude: %s :src %s :thing-at-point sexp" link lang))
     (org-transclusion-add)))
+
+(defun insert-file-link () ;<id:1672242704>
+  (interactive)
+  (insert (plist-get (find-file-line-link) :link))))
+
 
 
 (provide 'jorana)

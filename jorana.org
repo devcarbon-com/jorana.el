@@ -1,9 +1,11 @@
 * jorana.el - Reverse Literate setup using org-transclude.
 
-jorana is an english approximation for the Hindi word meaning:
-| 
+** overview:
+*** about the name:
 
-** Rational:
+| Jorana is an english approximation for the Hindi word meaning to connect, interweave, join, unite. 
+
+*** Rational:
 There are downsides to the standard literate style config:
 - colaboration
 - need to have all code in file to tangle
@@ -12,15 +14,18 @@ There are downsides to the standard literate style config:
 
 jorana.el is my attempt to remedy that a bit, useing the excellent org-transclusion package.
 
-** workflow:
+*** workflow:
 
-*** writing new code from org buffer
-One of the neat things of literate programming is that you can structure your code the same way as you think about it. 
+**** writing new code from org buffer
+One of the neat things of literate programming is that you can structure your code the same way as you think about it. Or really any way at all. 
 
 And it makes it straight-forward to remember how to set up the project, and writing a blog post of your work happens "for free".
 
-Something I want to as quck asnd seamless as possible is adding new code and linking code from the narrative. 
+Something I want to as quck and seamless as possible is adding new code and linking code from the narrative. 
 
+- for finding:
+ find-file -> consult-line -> include and activate transclusion 
+This will tag the line with an id so that the link doesn't break on renames or refactorings.
 
 #+transclude: [[file:jorana.el::<id:1672243297>][_defun_find_and_insert_transclusion______id_1672243297_]]  :src elisp :thing-at-point sexp
 
@@ -28,10 +33,53 @@ The magic happens mostly here:
 
 #+transclude: [[file:jorana.el::<id:1672243830>][_defun_find_file_line_link___]]  :src elisp :thing-at-point sexp
 
-#+RESULTS:
-: find-file-line-link
+- for adding new: wip
 
-*** jumping hither and yon
+***** TODO modify name extraction to not include ID
 
+***** TODO use completing read for file selection. 
+
+***** TODO use transient to allow easy custom options such as default THING
+
+***** TODO also allow for other means of finding files and jumping to desired point. (imenu for example)
+
+**** jumping hither and yon
+
+say you have a src block like so with your cursor after the 'w':
+
+#+begin_src emacs-lisp
+(defn hello-world ()
+   (message "Hellow| world!"))
+#+end_src
+
+I want to be able to instantly jump back and forth from the source. So:
+
+#+transclude: [[file:jorana.el::<id:1672282092>][_defun_search_target_in_last_used_buffers___]]  :src elisp :thing-at-point sexp
+
+This works by searching for the current line in recent buffers and 
+
+could use beg end info from transclude. Or evan searching for 'list at point. then calculating offset.
+
+this then could be renamed and used as jump to recent ref using jumplist.
+
+#+transclude: [[file:jorana.el::<id:1672282124>][_defun_search_target_in_last_used_buffers___target_bullseye_buffers_]]  :src elisp :thing-at-point sexp
+
+**** converting existing literates to jorana
+
+**** "magical" live edit 
+ie. send commands to other buffer and reload the current.
+- eval?
+
+** implimentation details:
+*** writing an emacs package:
+
+This is my very first emacs package. 
+
+Very glad for the [[https://github.com/Malabarba/names/][names]] package, makes namespacing possible.
+
+
+*** little (probably very unidiomatic) helpers:
+
+#+transclude: [[file:jorana.el::<id:1672306426>][_defun_copy_current_file_link_as_org_transclusion_link___]]  :src elisp :end "18" :thing-at-point sexp
 
 
