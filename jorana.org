@@ -1,51 +1,103 @@
 * jorana.el - Reverse Literate setup using org-transclude.
 
-** overview:
-*** about the name:
+** Overview:
+*** About the name:
 
-| Jorana is an english approximation for the Hindi word meaning to connect, interweave, join, unite. 
+| Jorana is an english approximation for the Hindi word meaning to connect, interweave, join, unite. And yes, this is the only Hindi word I know about. 
 
 *** Rational:
 There are downsides to the standard literate style config:
-- colaboration
-- need to have all code in file to tangle
+- colaboration.
+- need to have all code in file to tangle.
 - eventually with a big enough project, tangling gets a bit slow. 
-- testing can be tricky
+- testing can be tricky.
 
-jorana.el is my attempt to remedy that a bit, useing the excellent org-transclusion package.
+jorana.el is my attempt to remedy that a bit, using the excellent org-transclusion package.
 
 *** workflow:
 
-**** writing new code from org buffer
+**** Transient magic interface
+
+#+transclude: [[file:jorana.el::<id:1678513393>][_transient_define_prefix_jorana_dashboard______id_1678513393_]]  :src elisp :thing-at-point sexp
+
+**** writing new code from org narrative
 One of the neat things of literate programming is that you can structure your code the same way as you think about it. Or really any way at all. 
 
 And it makes it straight-forward to remember how to set up the project, and writing a blog post of your work happens "for free".
 
-Something I want to as quck and seamless as possible is adding new code and linking code from the narrative. 
+Something I want to be as quck and seamless as possible is adding new code and linking code from the narrative. 
 
-- for finding:
+**** Including already written code from org narrative
+
+- for finding: =find-and-insert-transclusion=
  find-file -> consult-line -> include and activate transclusion 
 This will tag the line with an id so that the link doesn't break on renames or refactorings.
 
-#+transclude: [[file:jorana.el::<id:1672243297>][_defun_find_and_insert_transclusion______id_1672243297_]]  :src elisp :thing-at-point sexp
+#+transclude: [[file:jorana.el::1][_defun_find_and_insert_transclusion______id_1672243297_]]  :end "2" :thing-at-point paragraph
 
-The magic happens mostly here:
+the magic happens mostly here:
 
 #+transclude: [[file:jorana.el::<id:1672243830>][_defun_find_file_line_link___]]  :src elisp :thing-at-point sexp
+#+transclude: [[file:jorana.el::<id:1672243830>][_defun_find_file_line_link___]]  :src elisp :thing-at-point sexp
+
+
+
+#+transclude: [[file:jorana.el::<id:1677619755>][________________________list__line_line___id_1677619755_]]  :src elisp :thing-at-point sexp
 
 - for adding new: wip
 
 ***** TODO modify name extraction to not include ID
 
-***** TODO use completing read for file selection. 
+***** TODO in org-transclude pull request, target navigation
 
-***** TODO use transient to allow easy custom options such as default THING
+say in your source you have this:
 
-***** TODO also allow for other means of finding files and jumping to desired point. (imenu for example)
+#+begin_src clojure
+(ns (:require
+   ,,,
+;;matrix  ;<id:1673570549>
+   [tiltontec.cell.core :refer [cF cF+ cF_ cI]]
+   [tiltontec.cell.observer :refer [fn-obs]]
+   [tiltontec.model.core :refer [mget mset! mswap! fm*] :as md]
+   [tiltontec.flutter-mx.core :refer [as-dart-callback] :as fx]
+   [tiltontec.util.base :refer [dprn dp dpx]]
+   [tiltontec.cell.base :refer [cinfo minfo] :as cty]
+   [tiltontec.cell.integrity :refer [with-integrity]]))
+#+end_src
+
+the ideal target is going to be the first sexp under the id, but this
+
+#+begin_src clojure
+(ns (:require
+   ,,,
+   [tiltontec.cell.core :refer [cF cF+ cF_ cI]]
+   [tiltontec.cell.observer :refer [fn-obs]]
+   [tiltontec.model.core :refer [mget mset! mswap! fm* #_(<id:1673571805>)] :as md]
+   [tiltontec.flutter-mx.core :refer [as-dart-callback] :as fx]
+   [tiltontec.util.base :refer [dprn dp dpx]]
+   [tiltontec.cell.base :refer [cinfo minfo] :as cty]
+   [tiltontec.cell.integrity :refer [with-integrity]]))
+#+end_src
+
+The ideal probably would be =[mget mset! mswap! fm* #_(<id:1673571805>)]=.
+
+but why not allow a Navigator lambda? Then the world is your oyster as they say. 
+TODO ^
+
+**** At code, want to include into narrative
+Say I'm already looking at code or writing code in some file. I want to be able to instantly transclude the thing at point into the narrative. 
+
+Probably want it to default to last point in the narrative, and have org-refile style navigation ready to go.
+
+Better yet, use =recursive-edit= so that the user can navigate however they like. 
+
+#+transclude: [[file:jorana.el::<id:1678580234>][_defun_add_to_narrative______id_1678580234_]]  :src elisp :thing-at-point sexp
+transclude: [[file:jorana.el::<id:1678580234>][_defun_add_to_narrative______id_1678580234_]]  :src elisp :thing-at-point sexp
 
 **** jumping hither and yon
 
-say you have a src block like so with your cursor after the 'w':
+
+say you have a src block like so with your cursor after the ='w'=:
 
 #+begin_src emacs-lisp
 (defn hello-world ()
@@ -66,10 +118,6 @@ this then could be renamed and used as jump to recent ref using jumplist.
 
 **** converting existing literates to jorana
 
-**** "magical" live edit 
-ie. send commands to other buffer and reload the current.
-- eval?
-
 ** implimentation details:
 *** writing an emacs package:
 
@@ -78,8 +126,6 @@ This is my very first emacs package.
 Very glad for the [[https://github.com/Malabarba/names/][names]] package, makes namespacing possible.
 
 
-*** little (probably very unidiomatic) helpers:
 
-#+transclude: [[file:jorana.el::<id:1672306426>][_defun_copy_current_file_link_as_org_transclusion_link___]]  :src elisp :end "18" :thing-at-point sexp
 
 
