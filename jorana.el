@@ -180,7 +180,7 @@ where [anything] is one or more characters. Return an Org mode link to the targe
          (link (let* ((line (line-number-at-pos (point-marker)))
                       (line-point (bounds-of-thing-at-point 'line)))
                  (list :line line 
-                       :target ( extract-target-from-line! line t "  ;")
+                       :target (extract-target-from-line! line t "  ;")
                        :text (remove-non-symbol-chars (buffer-substring (car line-point) (- (cdr line-point) 1))))))
          (line (plist-get link :line))
          (line-string (plist-get link :text))
@@ -235,14 +235,15 @@ The returned plist contains the following keys:
 
 (defun add-to-narrative () ;<id:1678580234>
   (interactive)
-  (let ((narrative (or current-narrative (set-narrative)))
+  (let ((narrative (or current-narrative (jorana-set-narrative (read-file-name "Narrative: " jorana-current-narrative))))
         (code-buf (current-buffer)))
     (switch-to-buffer (get-or-create-buffer-for-file narrative))
     (message (substitute-command-keys "Go to where you want the transclution, and press \\[exit-recursive-edit]"))
     (recursive-edit)
-    (insert (transclusion-link-from-target (with-current-buffer code-buf (create-link-target!))))))
+    (insert (transclusion-link-from-target (with-current-buffer code-buf (create-link-target!))))
+    (org-transclusion-add)))
 
-(defun find-and-insert-transclusion () ;id:1672243297>
+(defun find-and-insert-transclusion ()  ;<id:1678618587>
   "Find file and thing to transclude into current buffer."
   (interactive)
   (insert (transclusion-link-from-target (find-file-line-link!)))
@@ -275,9 +276,11 @@ The returned plist contains the following keys:
 ;;;###autoload
 (transient-define-prefix jorana-dashboard () ;<id:1678513393>
   "Create a sentence with several objects and a verb."
+
   ["Jorana Dashboard -- Variables"
    ("SPC" jorana-set-narrative :transient t)
    ("s" jorana-set-thing-to-use :transient t)]
+
   [["Actions"
     ("i" "find and include THING" jorana-find-and-insert-transclusion)
     ("a" "Add current THING to narrative" jorana-add-to-narrative)

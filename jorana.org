@@ -33,18 +33,12 @@ Something I want to be as quck and seamless as possible is adding new code and l
  find-file -> consult-line -> include and activate transclusion 
 This will tag the line with an id so that the link doesn't break on renames or refactorings.
 
-#+transclude: [[file:jorana.el::1][_defun_find_and_insert_transclusion______id_1672243297_]]  :end "2" :thing-at-point paragraph
+#+transclude: [[file:jorana.el::<id:1678618587>][_defun_find_and_insert_transclusion_______id_1678618587_]]  :src elisp :thing-at-point sexp
 
 the magic happens mostly here:
 
 #+transclude: [[file:jorana.el::<id:1672243830>][_defun_find_file_line_link___]]  :src elisp :thing-at-point sexp
-#+transclude: [[file:jorana.el::<id:1672243830>][_defun_find_file_line_link___]]  :src elisp :thing-at-point sexp
 
-
-
-#+transclude: [[file:jorana.el::<id:1677619755>][________________________list__line_line___id_1677619755_]]  :src elisp :thing-at-point sexp
-
-- for adding new: wip
 
 ***** TODO modify name extraction to not include ID
 
@@ -92,7 +86,6 @@ Probably want it to default to last point in the narrative, and have org-refile 
 Better yet, use =recursive-edit= so that the user can navigate however they like. 
 
 #+transclude: [[file:jorana.el::<id:1678580234>][_defun_add_to_narrative______id_1678580234_]]  :src elisp :thing-at-point sexp
-transclude: [[file:jorana.el::<id:1678580234>][_defun_add_to_narrative______id_1678580234_]]  :src elisp :thing-at-point sexp
 
 **** jumping hither and yon
 
