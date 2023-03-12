@@ -94,7 +94,7 @@ say you have a src block like so with your cursor after the ='w'=:
 
 #+begin_src emacs-lisp
 (defn hello-world ()
-      (message "Hellow| world!"))
+   (message "Hellow| world!"))
 #+end_src
 
 I want to be able to instantly jump back and forth from the source. So:
@@ -119,79 +119,6 @@ This is my very first emacs package.
 Very glad for the [[https://github.com/Malabarba/names/][names]] package, makes namespacing possible.
 
 
-
-** test zone:
-
-#+begin_src elisp
-;;; package --- Summary
-;;; Package-Requires: ((names "") (transient "") (consult "") (projectile "") (emacs "24"))
-
-
-
-;;; Commentary:
-;;; Code:
-
-(provide 'jorana)
-(eval-when-compile (require 'names))
-
-
-(use-package transient)
-(define-namespace jorana-
-
-(defvar current-narrative nil)
-(defvar thing-to-use "sexp")
-
-(defun get-or-create-buffer-for-file (filepath)
-  "Return the buffer for FILEPATH, or open buffer if it does not yet exist.
-We don't just use 'find-file-noselect because it would not include unsaved changes."
-  (or (find-buffer-visiting filepath)
-      (find-file-noselect filepath)))
-
-(defun current-time-in-seconds ()
-  "Return the current time in seconds from the epoch."
-  (format-time-string "%s" (current-time)))
-
-(defun gen-id-tag ()
-  (format "<id:%s>" (current-time-in-seconds)))
-
-och."
-
-
-  (interactive)
-  (insert (gen-id-tag)))
- (insert (gen-id-tag)))
- (insert (gen-id-tag)))
- (insert (gen-id-tag)))
- (insert (gen-id-tag)))
- (insert (gen-id-tag)))
- (insert (gen-id-tag)))
- (insert (gen-id-tag)))
- (insert (gen-id-tag)))
- (insert (gen-id-tag)))
-
-(defun get-line-contents (line)
-  "Return the line contents for LINE, with leading and trailing whitespace trimmed."
-  (let ((start (line-beginning-position line))
-        (end (line-end-position line)))
-    (string-trim (buffer-substring start end))))
-
-(defun remove-non-symbol-chars (string)
-  "Replace all non link-safe characters in STRING with underscores."
-  (replace-regexp-in-string "[^a-zA-Z0-9_]" "_" string))
-
-(defvar id-regex (concat "\\(#_\\|;\\|//\\|\\)\\( ?\\)\(?<id:.*?>\)?")
-  "Regex that matches target tag comments.
-
-   Example matches:
-   #_<id:tag>
-   #_(<id:tag>)
-   ; <id:tag>
-   //<id:tag>
-   <id:tag>")
-
-#+end_src
-
-#+RESULTS:
 
 
 
