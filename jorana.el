@@ -254,6 +254,7 @@ The returned plist contains the following keys:
   (insert (plist-get (find-file-line-link) :link)))
 
 
+;;;###autoload
 (transient-define-suffix jorana-set-narrative (current-narrative)
   "Set the sentence from minibuffer read"
   :description '(lambda ()
@@ -265,6 +266,7 @@ The returned plist contains the following keys:
   (interactive (list (read-file-name "Narrative: " jorana-current-narrative)))
   (setf jorana-current-narrative current-narrative))
 
+;;;###autoload
 (transient-define-suffix jorana-set-thing-to-use (thing)
   :description '(lambda ()
                   (concat "Thing to use:"
