@@ -94,7 +94,7 @@ say you have a src block like so with your cursor after the ='w'=:
 
 #+begin_src emacs-lisp
 (defn hello-world ()
-   (message "Hellow| world!"))
+      (message "Hellow| world!"))
 #+end_src
 
 I want to be able to instantly jump back and forth from the source. So:
