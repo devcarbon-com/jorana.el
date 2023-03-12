@@ -107,7 +107,7 @@ could use beg end info from transclude. Or evan searching for 'list at point. th
 
 this then could be renamed and used as jump to recent ref using jumplist.
 
-#+transclude: [[file:jorana.el::<id:1672282124>][_defun_search_target_in_last_used_buffers___target_bullseye_buffers_]]  :src elisp :thing-at-point sexp
+#+transclude: [[file:jorana.el::<id:1672282124>][_defun_search_target_in_last_used_buffers___target_bullseye_buffers_]]  :src emacs-lisp :thing-at-point sexp
 
 **** converting existing literates to jorana
 
@@ -123,4 +123,6 @@ Very glad for the [[https://github.com/Malabarba/names/][names]] package, makes 
 ** test zone:
 
 #+transclude: [[file:jorana.el::<id:1672227875>][_defun_insert_id_tag______id_1672227875_]]  :src elisp :end "1" :thing-at-point sexp
+
+#+RESULTS:
 
