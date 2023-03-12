@@ -29,10 +29,20 @@ We don't just use 'find-file-noselect because it would not include unsaved chang
 (defun gen-id-tag ()
   (format "<id:%s>" (current-time-in-seconds)))
 
-(defun insert-id-tag () ;<id:1672227875>
-  "Insert a jorana id. Currently, the current time in seconds from the epoch."
+och."
+
+
   (interactive)
   (insert (gen-id-tag)))
+ (insert (gen-id-tag)))
+ (insert (gen-id-tag)))
+ (insert (gen-id-tag)))
+ (insert (gen-id-tag)))
+ (insert (gen-id-tag)))
+ (insert (gen-id-tag)))
+ (insert (gen-id-tag)))
+ (insert (gen-id-tag)))
+ (insert (gen-id-tag)))
 
 (defun get-line-contents (line)
   "Return the line contents for LINE, with leading and trailing whitespace trimmed."
