@@ -161,10 +161,8 @@ Jump to the first occurrence if found. BUFFERS is a list of buffers to search."
       (prog2 (string-match "\\(<.*>\\)" line-text)
           (match-string 1 line-text)))))
 
-(defun extract-target-from-line! (line &rest generate-when-missing comment-string) ;<id:1678630244>
-  "Extract the target from LINE using a regex that matches a jorana-id.
-GENERATE-WHEN-MISSING adds an id if one doesn't already exist. 
-COMMENT-STRING is the comment to use to prefix the id.
+(defun extract-target-from-line! (line &rest generate-when-missing comment-string)
+  "Extract the target from LINE using a regex that matches <<[anything]>>.
 where [anything] is one or more characters. Return an Org mode link to the target."
   (let* ((line-text (buffer-substring (line-beginning-position) (line-end-position)))
          (target (target-from-line line)))
