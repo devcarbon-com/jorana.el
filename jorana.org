@@ -18,19 +18,7 @@ jorana.el is my attempt to remedy that a bit, using the excellent org-transclusi
 
 **** Transient magic interface
 
-#+begin_src elisp
-(transient-define-prefix jorana-dashboard () ;<id:1678513393>
-  "Create a sentence with several objects and a verb."
-
-  ["Jorana Dashboard -- Variables"
-   ("SPC" jorana-set-narrative :transient t)
-   ("s" jorana-set-thing-to-use :transient t)]
-
-  [["Actions"
-    ("i" "find and include THING" jorana-find-and-insert-transclusion)
-    ("a" "Add current THING to narrative" jorana-add-to-narrative)
-    ("e" "Live edit the transclusion" org-transclusion-live-sync-start)]])
-#+end_src
+#+transclude: [[file:jorana.el::<id:1678513393>][_transient_define_prefix_jorana_dashboard______id_1678513393_]]  :src elisp :thing-at-point sexp
 
 **** writing new code from org narrative
 One of the neat things of literate programming is that you can structure your code the same way as you think about it. Or really any way at all. 
@@ -45,51 +33,11 @@ Something I want to be as quck and seamless as possible is adding new code and l
  find-file -> consult-line -> include and activate transclusion 
 This will tag the line with an id so that the link doesn't break on renames or refactorings.
 
-#+begin_src elisp
-(defun find-and-insert-transclusion ()  ;i<id:1678618587>
-  "Find file and thing to transclude into current buffer."
-  (interactive)
-  (insert (transclusion-link-from-target (find-file-line-link!)))
-  (org-transclusion-add))
-#+end_src
-
-#+transclude: [[file:jorana.el::<id:1678618587>][_defun_find_and_insert_transclusion_______id_1678618587_]]  :end "2" :thing-at-point paragraph
-
-
-(transient-define-suffix jorana-set-narrative (current-narrative)
-  "Set the sentence from minibuffer read"
-  :description '(lambda ()
-                  (concat
-                   "Set current narrative: "
-                   (propertize
-                    (format "%s" jorana-current-narrative)
-                    'face 'transient-argument)))
-  (interactive (list (read-file-name "Narrative: " jorana-current-narrative)))
-  (setf jorana-current-narrative current-narrative))
+#+transclude: [[file:jorana.el::<id:1678618587>][_defun_find_and_insert_transclusion_______id_1678618587_]]  :src elisp :thing-at-point sexp
 
 the magic happens mostly here:
 
-#+begin_src elisp
-(defun find-file-line-link! () ;<id:1672243830>
-  "Jump to the most recent project buffer;
-Then prompt user to navigate to the code they want to include.
-
-The returned plist contains the following keys:
-
-:link - the 'org-mode' link string.
-:file - the relative path to the file from the current project.
-:target - the target of the link. This is an id like '<id:1172243297>'
-          so that links still work after refactoring."
-  (let ((return-buffer (current-buffer)))
-    (switch-to-buffer (cadr (current-project-buffers)))
-    (message (substitute-command-keys "Jump to the code you want to include, and press \\[exit-recursive-edit] to finish."))
-    (recursive-edit)
-    (let* ((root (projectile-project-root))
-           (relative-file (concat "file:" (file-relative-name buffer-file-name root)))
-           (code-buffer (current-buffer)))
-      (switch-to-buffer return-buffer)
-      (with-current-buffer code-buffer (create-link-target!)))))
-#+end_src
+#+transclude: [[file:jorana.el::<id:1672243830>][_defun_find_file_line_link___]]  :src elisp :thing-at-point sexp
 
 
 ***** TODO modify name extraction to not include ID
@@ -137,17 +85,7 @@ Probably want it to default to last point in the narrative, and have org-refile 
 
 Better yet, use =recursive-edit= so that the user can navigate however they like. 
 
-#+begin_src elisp
-(defun add-to-narrative () ;<id:1678580234>
-  (interactive)
-  (let ((narrative (or current-narrative (jorana-set-narrative (read-file-name "Narrative: " jorana-current-narrative))))
-        (code-buf (current-buffer)))
-    (switch-to-buffer (get-or-create-buffer-for-file narrative))
-    (message (substitute-command-keys "Go to where you want the transclution, and press \\[exit-recursive-edit]"))
-    (recursive-edit)
-    (insert (transclusion-link-from-target (with-current-buffer code-buf (create-link-target!))))
-    (org-transclusion-add)))
-#+end_src
+#+transclude: [[file:jorana.el::<id:1678580234>][_defun_add_to_narrative______id_1678580234_]]  :src elisp :thing-at-point sexp
 
 **** jumping hither and yon
 
@@ -161,15 +99,7 @@ say you have a src block like so with your cursor after the ='w'=:
 
 I want to be able to instantly jump back and forth from the source. So:
 
-#+begin_src elisp
-(defun search-target-in-last-used-buffers () ;<id:1672282092>
-  (interactive)
-  (search-target-in-last-used-buffers*
-   (string-trim (substring-no-properties (thing-at-point 'line)))
-
-   (current-column)
-   (cl-subseq (current-non-hidden-buffers) 1 5)))
-#+end_src
+#+transclude: [[file:jorana.el::<id:1672282092>][_defun_search_target_in_last_used_buffers___]]  :src elisp :thing-at-point sexp
 
 This works by searching for the current line in recent buffers and 
 
@@ -177,32 +107,7 @@ could use beg end info from transclude. Or evan searching for 'list at point. th
 
 this then could be renamed and used as jump to recent ref using jumplist.
 
-#+begin_src elisp
-(defun search-target-in-last-used-buffers* (target bullseye buffers) ;<id:1672282124>
-  "Search for the contents of TARGET at point in the last 5 used buffers.
-Jump to the first occurrence if found. BUFFERS is a list of buffers to search."
-  ;; TODO this would be much more reliable if if were to instead of searching use the precise offset from the transclution start.
-  ;; UPDATE turns out the text properties have this information. 
-  ;; example:  (get-text-property (point) 'tc-src-beg-mkr)
-  (if target
-      (if buffers
-          (let ((buffer (car buffers)))
-            (let ((marker (save-excursion
-                            (set-buffer buffer)
-                            (beginning-of-buffer)
-                            (if (search-forward target nil t)
-                                (marker-at-point (match-beginning 0) (current-buffer))
-                              (search-target-in-last-used-buffers* target
-                                                                   bullseye
-                                                                   (cdr buffers))))))
-              (when marker
-                (switch-to-buffer (marker-buffer marker))
-                (goto-char marker)
-                (beginning-of-line)
-                (forward-char bullseye))))
-        (message "Target not found in any of the last 5 used buffers."))
-    (message "No target at point to search for.")))
-#+end_src
+#+transclude: [[file:jorana.el::<id:1672282124>][_defun_search_target_in_last_used_buffers___target_bullseye_buffers_]]  :src elisp :thing-at-point sexp
 
 **** converting existing literates to jorana
 
