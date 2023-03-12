@@ -168,7 +168,9 @@ COMMENT-STRING is the comment to use to prefix the id.
 where [anything] is one or more characters. Return an Org mode link to the target."
   (let* ((line-text (buffer-substring (line-beginning-position) (line-end-position)))
          (target (target-from-line line)))
-    (cond (target (substring-no-properties target))
+    (cond (target (substring-no-properties
+
+target))
           (generate-when-missing 
            (let ((target (gen-id-tag)))
              (append-to-line line (concat (or comment-string " ;") target))
