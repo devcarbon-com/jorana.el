@@ -31,7 +31,6 @@ We don't just use 'find-file-noselect because it would not include unsaved chang
 
 (defun insert-id-tag () ;<id:1672227875>
   "Insert a jorana id. Currently, the current time in seconds from the epoch."
-
   (interactive)
   (insert (gen-id-tag)))
 
