@@ -29,20 +29,10 @@ We don't just use 'find-file-noselect because it would not include unsaved chang
 (defun gen-id-tag ()
   (format "<id:%s>" (current-time-in-seconds)))
 
-och."
-
-
+(defun insert-id-tag () ;<id:1672227875>
+  "Insert a jorana id. Currently, the current time in seconds from the epoch."
   (interactive)
   (insert (gen-id-tag)))
- (insert (gen-id-tag)))
- (insert (gen-id-tag)))
- (insert (gen-id-tag)))
- (insert (gen-id-tag)))
- (insert (gen-id-tag)))
- (insert (gen-id-tag)))
- (insert (gen-id-tag)))
- (insert (gen-id-tag)))
- (insert (gen-id-tag)))
 
 (defun get-line-contents (line)
   "Return the line contents for LINE, with leading and trailing whitespace trimmed."
@@ -264,7 +254,6 @@ The returned plist contains the following keys:
   (insert (plist-get (find-file-line-link) :link)))
 
 
-;;;###autoload
 (transient-define-suffix jorana-set-narrative (current-narrative)
   "Set the sentence from minibuffer read"
   :description '(lambda ()
@@ -276,7 +265,6 @@ The returned plist contains the following keys:
   (interactive (list (read-file-name "Narrative: " jorana-current-narrative)))
   (setf jorana-current-narrative current-narrative))
 
-;;;###autoload
 (transient-define-suffix jorana-set-thing-to-use (thing)
   :description '(lambda ()
                   (concat "Thing to use:"
