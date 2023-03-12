@@ -243,7 +243,7 @@ The returned plist contains the following keys:
     (insert (transclusion-link-from-target (with-current-buffer code-buf (create-link-target!))))
     (org-transclusion-add)))
 
-(defun find-and-insert-transclusion ()  ;i<id:1678618587>
+(defun find-and-insert-transclusion ()  ;<id:1678618587>
   "Find file and thing to transclude into current buffer."
   (interactive)
   (insert (transclusion-link-from-target (find-file-line-link!)))
