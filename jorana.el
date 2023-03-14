@@ -131,9 +131,14 @@ We don't just use 'find-file-noselect because it would not include unsaved chang
 
 (defun translusion-mirror-start ()
   "Matching transclusion start marker."
-  ;; When org-transclusion-by is present, we are at source.
+  ;; Note
   (let* ((transcluder (get-text-property (point) 'org-transclusion-by))
-         (at-source (and transcluder)))))
+         (transcludee (get-text-property (point) 'org-transclusion-beg))
+         ;; When org-transclusion-by is present, we are at source.
+         ;; Otherwise we are A. not in a transclusion at all,
+         ;; or B. at the transcluder.
+         (mirror-start (or transcluder transcludee))
+         ())))
 
 (defun jump-to-transclusion-pair ()
   "Goto matching transclusion."
