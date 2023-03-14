@@ -118,6 +118,24 @@ We don't just use 'find-file-noselect because it would not include unsaved chang
   (let ((buffers (buffer-list)))
     (seq-filter (lambda (buffer) (not (string-prefix-p " " (buffer-name buffer)))) buffers)))
 
+(defun -goto-marker (marker)
+  (switch-to-buffer (marker-buffer marker))
+  (goto-char marker))
+
+(defun marker-of-mirrored-point (mirror-start cursor-offset)
+  "Create marker to matching transclusion."
+  (save-excursion
+    (-goto-marker mirror-start)
+    (goto-char (+ (point) cursor-offset))
+    (marker-at-point (point))))
+
+(defun jump-to-transclusion-pair (target bullseye)
+  "Goto matching transclusion."
+  ;; When org-transclusion-by is present, we are at source.
+  (let* ((transcluder (get-text-property (point) 'org-transclusion-by))
+         (at-source (and transcluder)))
+    (cond ((at-source (progn (goto-marker transcluder)))))))
+
 (defun search-target-in-last-used-buffers* (target bullseye buffers) ;<id:1672282124>
   "Search for the contents of TARGET at point in the last 5 used buffers.
 Jump to the first occurrence if found. BUFFERS is a list of buffers to search."

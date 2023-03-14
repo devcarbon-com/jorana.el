@@ -101,7 +101,6 @@ I want to be able to instantly jump back and forth from the source. So:
 
 #+transclude: [[file:jorana.el::<id:1672282092>][_defun_search_target_in_last_used_buffers___]]  :src elisp :thing-at-point sexp
 
-#+transclude: [[file:jorana.el::<id:1672282124>][_defun_search_target_in_last_used_buffers___target_bullseye_buffers____id_1672282124_]]  :src elisp :thing-at-point sexp
 This works by searching for the current line in recent buffers and 
 
 could use beg end info from transclude. Or evan searching for 'list at point. then calculating offset.
