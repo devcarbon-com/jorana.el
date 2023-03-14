@@ -7,9 +7,9 @@
 
 *** Rational:
 There are downsides to the standard literate style config:
-- colaboration.
+- Colaboration.
 - need to have all code in file to tangle.
-- eventually with a big enough project, tangling gets a bit slow. 
+- eventually with a big enough project, tangling can get a little slow. 
 - testing can be tricky.
 
 jorana.el is my attempt to remedy that a bit, using the excellent org-transclusion package.
@@ -59,7 +59,7 @@ say in your source you have this:
    [tiltontec.cell.integrity :refer [with-integrity]]))
 #+end_src
 
-the ideal target is going to be the first sexp under the id, but this
+the ideal target is going to be the first sexp under the id, but in this:
 
 #+begin_src clojure
 (ns (:require
@@ -76,7 +76,7 @@ the ideal target is going to be the first sexp under the id, but this
 The ideal probably would be =[mget mset! mswap! fm* #_(<id:1673571805>)]=.
 
 but why not allow a Navigator lambda? Then the world is your oyster as they say. 
-TODO ^
+TODO ^ as org-transclusion pull request
 
 **** At code, want to include into narrative
 Say I'm already looking at code or writing code in some file. I want to be able to instantly transclude the thing at point into the narrative. 
