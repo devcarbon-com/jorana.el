@@ -145,10 +145,11 @@ LET-BINDINGS and BODY are the same as in #'let*."
   (alist-of-let*
    ((transcluder (get-text-property (point) 'org-transclusion-by))
     (tc-pair (get-text-property (point) 'org-transclusion-pair))
-    (transcludee (save-mark-and-excursion
-                   (switch-to-buffer (overlay-buffer tc-pair))
-                   (goto-char (overlay-start tc-pair))
-                   (point-marker)))
+    (transcludee (save-buffer
+                  (save-mark-and-excursion
+                    (switch-to-buffer (overlay-buffer tc-pair))
+                    (goto-char (overlay-start tc-pair))
+                    (point-marker))))
     ;; When org-transclusion-by is present, we are at source.
     ;; Otherwise we are A. not in a transclusion at all,
     ;; or B. at the transcluder.
