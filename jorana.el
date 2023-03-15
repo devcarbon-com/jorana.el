@@ -144,13 +144,13 @@ LET-BINDINGS and BODY are the same as in #'let*."
   (interactive)
   (alist-of-let*
    ((transcluder (get-text-property (point) 'org-transclusion-by))
-    (transcludee (get-text-property (point) 'org-transclusion-beg-mkr))
-    (at-transcluder (and (not transcluder) transcludee))
+    (tc-pair (get-text-property (point) 'org-transclusion-pair))
+    (transcludee (overlay-start tc-pair))
     ;; When org-transclusion-by is present, we are at source.
     ;; Otherwise we are A. not in a transclusion at all,
     ;; or B. at the transcluder.
+    (at-transcluder (and (not transcluder) transcludee))
     (mirror-start (or transcluder transcludee))
-    (tc-pair (get-text-property (point) 'org-transclusion-pair))
     (in-src-block (equal "src" (get-text-property mirror-start `org-transclusion-type)))
     (mirror-start (if (and at-transcluder in-src-block)
                       ;; temp until pull request made and accepted to org-transclusion.
@@ -163,8 +163,7 @@ LET-BINDINGS and BODY are the same as in #'let*."
                        (save-mark-and-excursion
                          (org-babel-mark-block)
                          (region-beginning))
-                     ( tc-pair)))))
-  )
+                     (overlay-start tc-pair))))))
 
 (defun transclusion-mirror-start () ;<id:1678842902>
   "Matching transclusion start marker."
