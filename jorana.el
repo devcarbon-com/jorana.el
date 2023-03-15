@@ -125,9 +125,10 @@ We don't just use 'find-file-noselect because it would not include unsaved chang
 (defun marker-of-mirrored-point (mirror-start cursor-offset)
   "Create marker to matching transclusion."
   (save-excursion
-    (-goto-marker mirror-start)
-    (goto-char (+ (point) cursor-offset))
-    (point-marker)))
+    (with-current-buffer (marker-buffer mirror-start)
+      (goto-char mirror-start)
+      (goto-char (+ (point) cursor-offset))
+      (point-marker))))
 
 (defmacro alist-of-let* (let-bindings &rest body)
   "This is the same as #'let*, except it return an alist of the bindings.
@@ -165,7 +166,6 @@ LET-BINDINGS and BODY are the same as in #'let*."
       mirror-start)))
 
 (defun transclusion-info () ;<id:1678859998>
-  (interactive)
   (alist-of-let*
    ((transcluder (get-text-property (point) 'org-transclusion-by))
     (tc-pair (get-text-property (point) 'org-transclusion-pair))
@@ -185,18 +185,16 @@ LET-BINDINGS and BODY are the same as in #'let*."
                          (set-marker (make-marker) (region-beginning)))
                      transcludee)))))
 
-(defun -mirror-offset ()
-  (save-mark-and-excursion
-    (let ((start )) (- (point) start))))
+(defun -mirror-offset (current-start)
+  (with-current-buffer (marker-buffer current-start)
+    (- (point) current-start)))
 
 (defun jump-to-transclusion-pair ()
   "Goto matching transclusion."
   (interactive)
-  (let* ((mirror-start (transclusion-mirror-start))
-         (mirror-offset (-mirror-offset)))
-    (-goto-marker (marker-of-mirrored-point mirror-start offset))
-    (goto-char (+ (point) mirror-offset)))
-  ())
+  (let-alist (transclusion-info)
+    (-goto-marker (marker-of-mirrored-point .mirror-start (-mirror-offset .current-start)))
+    (goto-char (+ (point) mirror-offset))))
 
 (defun search-target-in-last-used-buffers* (target bullseye buffers) ;<id:1672282124>
   "Search for the contents of TARGET at point in the last 5 used buffers.
