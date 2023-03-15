@@ -134,12 +134,15 @@ We don't just use 'find-file-noselect because it would not include unsaved chang
   ;; Note
   (let* ((transcluder (get-text-property (point) 'org-transclusion-by))
          (transcludee (get-text-property (point) 'org-transclusion-beg))
+         (at-source (and transcluder))
+         (in-src-block (equal "src" (get-text-property (point) `org-transclusion-type)))
          ;; When org-transclusion-by is present, we are at source.
          ;; Otherwise we are A. not in a transclusion at all,
          ;; or B. at the transcluder.
          (mirror-start (or transcluder transcludee)))
     ;; temp until pull request made and accepted to org-transclusion.
-    (when (org-mode-p))))
+    (if (and (not at-source) (get-text-property (point) `org-transclusion-type))
+        ())))
 
 (defun jump-to-transclusion-pair ()
   "Goto matching transclusion."
