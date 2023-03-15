@@ -138,8 +138,8 @@ We don't just use 'find-file-noselect because it would not include unsaved chang
          ;; Otherwise we are A. not in a transclusion at all,
          ;; or B. at the transcluder.
          (mirror-start (or transcluder transcludee)))
-    ;; temp until org-trans
-    (when )))
+    ;; temp until pull request made and accepted to org-transclusion.
+    (when (org-mode-p))))
 
 (defun jump-to-transclusion-pair ()
   "Goto matching transclusion."
