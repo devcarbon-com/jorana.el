@@ -154,13 +154,19 @@ LET-BINDINGS and BODY are the same as in #'let*."
     ;; or B. at the transcluder.
     (at-transcluder (and transcludee (not transcluder)))
     (mirror-start (or transcluder transcludee))
-
-
-
-
-
-
     (in-src-block (equal "src" (get-char-property (point) `org-transclusion-type)))
+
+
+
+
+
+
+
+
+
+
+
+
     (current-start (if (and at-transcluder in-src-block)
                        (save-mark-and-excursion
                          (org-babel-mark-block)
@@ -192,7 +198,8 @@ LET-BINDINGS and BODY are the same as in #'let*."
   (refresh-remote-transclusion)
   (let-alist (transclusion-info)
     (-goto-marker (marker-of-mirrored-point .mirror-start (-mirror-offset .current-start)))
-    (recenter)))
+    (recenter)
+    (redisplay)))
 
 (defun search-target-in-last-used-buffers* (target bullseye buffers) ;<id:1672282124>
   "Search for the contents of TARGET at point in the last 5 used buffers.
