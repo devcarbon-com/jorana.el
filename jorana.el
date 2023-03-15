@@ -129,6 +129,43 @@ We don't just use 'find-file-noselect because it would not include unsaved chang
     (goto-char (+ (point) cursor-offset))
     (point-marker)))
 
+(defmacro alist-of-let* (let-bindings &rest body)
+  "This is the same as #'let*, except it return an alist of the bindings.
+LET-BINDINGS and BODY are the same as in #'let*."
+  `(let* ,let-bindings
+     ,@body
+     (list ,@(mapcar (lambda (binding)
+                       (list #'cons
+                             `',(car binding)
+                             (car binding)))
+                     let-bindings))))
+
+(defun transclusion-info ()
+  (interactive)
+  (alist-of-let*
+   ((transcluder (get-text-property (point) 'org-transclusion-by))
+    (transcludee (get-text-property (point) 'org-transclusion-beg-mkr))
+    (at-transcluder (and (not transcluder) transcludee))
+    ;; When org-transclusion-by is present, we are at source.
+    ;; Otherwise we are A. not in a transclusion at all,
+    ;; or B. at the transcluder.
+    (mirror-start (or transcluder transcludee))
+    (tc-pair (get-text-property (point) 'org-transclusion-pair))
+    (in-src-block (equal "src" (get-text-property mirror-start `org-transclusion-type)))
+    (mirror-start (if (and at-transcluder in-src-block)
+                      ;; temp until pull request made and accepted to org-transclusion.
+                      (save-mark-and-excursion
+                        (-goto-marker mirror-start)
+                        (org-babel-mark-block)
+                        (region-beginning))
+                    mirror-start))
+    (current-start (if at-transcluder
+                       (save-mark-and-excursion
+                         (org-babel-mark-block)
+                         (region-beginning))
+                     ( tc-pair)))))
+  )
+
 (defun transclusion-mirror-start () ;<id:1678842902>
   "Matching transclusion start marker."
   ;; Note that this is a mirror of the raw tc content.
@@ -139,7 +176,13 @@ We don't just use 'find-file-noselect because it would not include unsaved chang
          ;; Otherwise we are A. not in a transclusion at all,
          ;; or B. at the transcluder.
          (mirror-start (or transcluder transcludee))
-         (in-src-block (equal "src" (get-text-property mirror-start `org-transclusion-type))))
+         (in-src-block (equal "src" (get-text-property mirror-start `org-transclusion-type)))
+         (mirror-start (if (and at-trascluder in-src-block)
+                           ;; temp until pull request made and accepted to org-transclusion.
+                           (save-mark-and-excursion
+                             (org-babel-mark-block)
+                             (region-beginning))
+                         mirror-start)))
     (if (and at-trascluder in-src-block)
         ;; temp until pull request made and accepted to org-transclusion.
         (save-mark-and-excursion
@@ -147,11 +190,17 @@ We don't just use 'find-file-noselect because it would not include unsaved chang
           (region-beginning))
       mirror-start)))
 
+(defun -mirror-offset ()
+  (save-mark-and-excursion
+    (let ((start )) (- (point) start))))
+
 (defun jump-to-transclusion-pair ()
   "Goto matching transclusion."
   (interactive)
-  (let* ((mirror-start (transclusion-mirror-start)))
-    (-goto-marker (marker-of-mirrored-point mirror-start offset))))
+  (let* ((mirror-start (transclusion-mirror-start))
+         (mirror-offset (-mirror-offset)))
+    (-goto-marker (marker-of-mirrored-point mirror-start offset))
+    (goto-char (+ (point) mirror-offset))))
 
 (defun search-target-in-last-used-buffers* (target bullseye buffers) ;<id:1672282124>
   "Search for the contents of TARGET at point in the last 5 used buffers.
