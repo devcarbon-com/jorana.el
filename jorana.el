@@ -142,7 +142,8 @@ We don't just use 'find-file-noselect because it would not include unsaved chang
          (mirror-start (or transcluder transcludee)))
     ;; temp until pull request made and accepted to org-transclusion.
     (if (and (not at-source) in-src-block)
-        ())))
+        (save-mark-and-excursion
+          (org-babel-m)))))
 
 (defun jump-to-transclusion-pair ()
   "Goto matching transclusion."
