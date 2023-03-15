@@ -9,20 +9,20 @@
   "Log the last command."
   (message (format "%s" this-command)))
 
-(defun p4-write-attempt (data context caller) 										; If it's a read-only-buffer and you wrote to it
+(defun read-only-jump-before-edit (data context caller) 										; If it's a read-only-buffer and you wrote to it
   (if (get-char-property (point) 'read-only) 																		; And the user wants to checked out
       (let* ((last-user-cmds (recent-keys 'recent-cmds))
              (last-user-cmd (cdr (aref last-user-cmds (1- (length last-user-cmds)))))
              (in-transclusion (get-char-property (point) 'org-transclusion-type)))
         (if in-transclusion
-            (progn (call-interactively #'jump-to-transclusion-pair)
+            (progn (call-interactively #'jorana-jump-to-transclusion-pair)
                    (if (eq last-user-cmd #'self-insert-command)
                        (self-insert-command 1)
                      (call-interactively last-user-cmd)))
           (funcall #'help-command-error-confusable-suggestions data context caller)))
     (funcall #'help-command-error-confusable-suggestions data context caller)))
 
-(setq command-error-function #'p4-write-attempt)
+(setq command-error-function #'read-only-jump-before-edit)
 command-error-function-bak
 
 (remove-hook 'pre-command-hook #'my-pre-command-function)

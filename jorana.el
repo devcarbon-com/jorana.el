@@ -13,7 +13,8 @@
 (use-package transient)
 (define-namespace jorana-
 
-(defvar current-narrative nil)
+(defcustom current-narrative nil ;<id:1678875463>
+  "Define the narrative for the current project.")
 (defvar thing-to-use "sexp")
 
 (defun get-or-create-buffer-for-file (filepath)
@@ -155,12 +156,14 @@ LET-BINDINGS and BODY are the same as in #'let*."
     (at-transcluder (and transcludee (not transcluder)))
     (mirror-start (or transcluder transcludee))
     (in-src-block (equal "src" (get-char-property (point) `org-transclusion-type)))
+    (mirror-in-src-block (with-current-buffer (marker-buffer mirror-start)
+                           (equal "src" (get-char-property mirror-start `org-transclusion-type))))
     (current-start (if (and at-transcluder in-src-block)
                        (save-mark-and-excursion
                          (org-babel-mark-block)
                          (set-marker (make-marker) (region-beginning)))
                      transcludee))
-    (mirror-start (if (and (not at-transcluder) (not in-src-block))
+    (mirror-start (if mirror-in-src-block
                       (with-current-buffer (marker-buffer mirror-start)
                         (save-mark-and-excursion
                           (goto-char mirror-start)
@@ -180,47 +183,17 @@ LET-BINDINGS and BODY are the same as in #'let*."
           (goto-char remote)
           (org-transclusion-refresh))))))
 
-(defun jump-to-transclusion-pair ()
+(defun jump-to-transclusion-pair () ;<id:1678874579>
   "Goto matching transclusion."
   (interactive)
   (refresh-remote-transclusion)
+  ;; Let's try to not jar the view too much.
   (let ((current-scroll-pos (count-lines (window-start) (point))))
     (let-alist (transclusion-info)
       (-goto-marker (marker-of-mirrored-point .mirror-start (-mirror-offset .current-start)))
+      ;; try to re-trigger fontlock coloring by scrolling up first.
+      (recenter -1)
       (recenter current-scroll-pos))))
-
-(defun search-target-in-last-used-buffers* (target bullseye buffers) ;<id:1672282124>
-  "Search for the contents of TARGET at point in the last 5 used buffers.
-Jump to the first occurrence if found. BUFFERS is a list of buffers to search."
-  ;; TODO this would be much more reliable if if were to instead of searching use the precise offset from the transclution start.
-  ;; UPDATE turns out the text properties have this information. 
-  ;; example:  (get-text-property (point) 'tc-src-beg-mkr)
-  (if target
-      (if buffers
-          (let ((buffer (car buffers)))
-            (let ((marker (save-excursion
-                            (set-buffer buffer)
-                            (beginning-of-buffer)
-                            (if (search-forward target nil t)
-                                (marker-at-point (match-beginning 0) (current-buffer))
-                              (search-target-in-last-used-buffers* target
-                                                                   bullseye
-                                                                   (cdr buffers))))))
-              (when marker
-                (switch-to-buffer (marker-buffer marker))
-                (goto-char marker)
-                (beginning-of-line)
-                (forward-char bullseye))))
-        (message "Target not found in any of the last 5 used buffers."))
-    (message "No target at point to search for.")))
-
-(defun search-target-in-last-used-buffers () ;<id:1672282092>
-  (interactive)
-  (search-target-in-last-used-buffers*
-   (string-trim (substring-no-properties (thing-at-point 'line)))
-   
-   (current-column)
-   (cl-subseq (current-non-hidden-buffers) 1 5)))
 
 (defun target-from-line (line) ;<id:1678573021>
   "Target from LINE."

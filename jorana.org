@@ -14,6 +14,10 @@ There are downsides to the standard literate style config:
 
 jorana.el is my attempt to remedy that a bit, using the excellent org-transclusion package.
 
+*** Variables
+
+#+transclude: [[file:jorana.el::<id:1678875463>][_defcustom_current_narrative_nil]]  :src elisp :thing-at-point sexp
+
 *** workflow:
 
 **** Transient magic interface
@@ -99,24 +103,22 @@ say you have a src block like so with your cursor after the ='w'=:
 
 I want to be able to instantly jump back and forth from the source. So:
 
-#+transclude: [[file:jorana.el::<id:1672282092>][_defun_search_target_in_last_used_buffers___]]  :src elisp :thing-at-point sexp
+#+transclude: [[file:jorana.el::<id:1678874579>][_defun_jump_to_transclusion_pair___]]  :src elisp :thing-at-point sexp
 
-#+transclude: [[file:jorana.el::<id:1672282124>][_defun_search_target_in_last_used_buffers___target_bullseye_buffers____id_1672282124_]]  :src elisp :thing-at-point sexp
-This works by searching for the current line in recent buffers and 
-
-could use beg end info from transclude. Or evan searching for 'list at point. then calculating offset.
-
-this then could be renamed and used as jump to recent ref using jumplist.
-
-#+transclude: [[file:jorana.el::<id:1672282124>][_defun_search_target_in_last_used_buffers___target_bullseye_buffers_]]  :src elisp :thing-at-point sexp
-
-better imp:
+Getting the relavant transclusion info is a bit convoluted...
 
 #+transclude: [[file:jorana.el::<id:1678859998>][_defun_transclusion_info___]]  :src elisp :thing-at-point sexp
 
-#+transclude: [[file:jorana.el::<id:1678842902>][_defun_translusion_mirror_start___]]  :src elisp :thing-at-point sexp
 
 **** converting existing literates to jorana
+
+*** things:
+**** TODO update links to ids. 
+- test if link is dead
+- search project for id
+**** TODO allow new heading creation when tc is open
+**** TODO detect comment type from major mode
+**** TODO custom variables for auto-jump-on-edit
 
 ** implimentation details:
 *** writing an emacs package:
@@ -126,6 +128,6 @@ This is my very first emacs package.
 Very glad for the [[https://github.com/Malabarba/names/][names]] package, makes namespacing possible.
 
 
-
 #+transclude: [[file:jorana.el::<id:1678630244>][_defun_extract_target_from_line___line__rest_generate_when_missing_comment_string_]]  :src elisp :thing-at-point sexp
+
 
