@@ -141,34 +141,10 @@ LET-BINDINGS and BODY are the same as in #'let*."
                              (car binding)))
                      let-bindings))))
 
-(defun transclusion-mirror-start () ;<id:1678842902>
-  "Matching transclusion start marker."
-  ;; Note that this is a mirror of the raw tc content.
-  (let* ((transcluder (get-text-property (point) 'org-transclusion-by))
-         (transcludee (get-text-property (point) 'org-transclusion-beg-mkr))
-         (at-transcluder (not transcluder))
-         ;; When org-transclusion-by is present, we are at source.
-         ;; Otherwise we are A. not in a transclusion at all,
-         ;; or B. at the transcluder.
-         (mirror-start (or transcluder transcludee))
-         (in-src-block (equal "src" (get-text-property mirror-start `org-transclusion-type)))
-         (mirror-start (if (and at-trascluder in-src-block)
-                           ;; temp until pull request made and accepted to org-transclusion.
-                           (save-mark-and-excursion
-                             (org-babel-mark-block)
-                             (region-beginning))
-                         mirror-start)))
-    (if (and at-trascluder in-src-block)
-        ;; temp until pull request made and accepted to org-transclusion.
-        (save-mark-and-excursion
-          (org-babel-mark-block)
-          (region-beginning))
-      mirror-start)))
-
 (defun transclusion-info () ;<id:1678859998>
   (alist-of-let*
-   ((transcluder (get-text-property (point) 'org-transclusion-by))
-    (tc-pair (get-text-property (point) 'org-transclusion-pair))
+   ((transcluder (get-char-property (point) 'org-transclusion-by))
+    (tc-pair (get-char-property (point) 'org-transclusion-pair))
     (transcludee (save-mark-and-excursion
                    (with-current-buffer (overlay-buffer tc-pair)
                      (goto-char (overlay-start tc-pair))
@@ -178,23 +154,38 @@ LET-BINDINGS and BODY are the same as in #'let*."
     ;; or B. at the transcluder.
     (at-transcluder (and transcludee (not transcluder)))
     (mirror-start (or transcluder transcludee))
-    (in-src-block (equal "src" (get-text-property (point) `org-transclusion-type)))
+    (in-src-block (equal "src" (get-char-property (point) `org-transclusion-type)))
     (current-start (if (and at-transcluder in-src-block)
                        (save-mark-and-excursion
                          (org-babel-mark-block)
                          (set-marker (make-marker) (region-beginning)))
-                     transcludee)))))
+                     transcludee))
+    (mirror-start (if (and (not at-transcluder) (not in-src-block))
+                      (with-current-buffer (marker-buffer mirror-start)
+                        (save-mark-and-excursion
+                          (goto-char mirror-start)
+                          (org-babel-mark-block)
+                          (set-marker (make-marker) (region-beginning))))
+                    mirror-start)))))
 
 (defun -mirror-offset (current-start)
   (with-current-buffer (marker-buffer current-start)
     (- (point) current-start)))
 
+(defun refresh-remote-transclusion ()
+  (let ((remote (get-char-property (point) 'org-transclusion-by)))
+    (when remote
+      (with-current-buffer (marker-buffer remote)
+        (save-excursion
+          (goto-char remote)
+          (org-transclusion-refresh))))))
+
 (defun jump-to-transclusion-pair ()
   "Goto matching transclusion."
   (interactive)
+  (refresh-remote-transclusion)
   (let-alist (transclusion-info)
-    (-goto-marker (marker-of-mirrored-point .mirror-start (-mirror-offset .current-start)))
-    (goto-char (+ (point) mirror-offset))))
+    (-goto-marker (marker-of-mirrored-point .mirror-start (-mirror-offset .current-start)))))
 
 (defun search-target-in-last-used-buffers* (target bullseye buffers) ;<id:1672282124>
   "Search for the contents of TARGET at point in the last 5 used buffers.
