@@ -110,6 +110,10 @@ this then could be renamed and used as jump to recent ref using jumplist.
 
 #+transclude: [[file:jorana.el::<id:1672282124>][_defun_search_target_in_last_used_buffers___target_bullseye_buffers_]]  :src elisp :thing-at-point sexp
 
+better imp:
+
+#+transclude: [[file:jorana.el::<id:1678842902>][_defun_translusion_mirror_start___]]  :src elisp :thing-at-point sexp
+
 **** converting existing literates to jorana
 
 ** implimentation details:
