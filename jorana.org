@@ -112,6 +112,8 @@ this then could be renamed and used as jump to recent ref using jumplist.
 
 better imp:
 
+#+transclude: [[file:jorana.el::<id:1678859998>][_defun_transclusion_info___]]  :src elisp :thing-at-point sexp
+
 #+transclude: [[file:jorana.el::<id:1678842902>][_defun_translusion_mirror_start___]]  :src elisp :thing-at-point sexp
 
 **** converting existing literates to jorana
