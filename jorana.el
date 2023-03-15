@@ -155,18 +155,6 @@ LET-BINDINGS and BODY are the same as in #'let*."
     (at-transcluder (and transcludee (not transcluder)))
     (mirror-start (or transcluder transcludee))
     (in-src-block (equal "src" (get-char-property (point) `org-transclusion-type)))
-
-
-
-
-
-
-
-
-
-
-
-
     (current-start (if (and at-transcluder in-src-block)
                        (save-mark-and-excursion
                          (org-babel-mark-block)
