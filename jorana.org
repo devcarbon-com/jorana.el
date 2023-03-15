@@ -105,12 +105,14 @@ I want to be able to instantly jump back and forth from the source. So:
 
 #+transclude: [[file:jorana.el::<id:1678874579>][_defun_jump_to_transclusion_pair___]]  :src elisp :thing-at-point sexp
 
-Getting the relavant transclusion info is a bit convoluted...
+Getting the relavant transclusion info is a bit convoluted at the moment; this could use a refactor...
 
 #+transclude: [[file:jorana.el::<id:1678859998>][_defun_transclusion_info___]]  :src elisp :thing-at-point sexp
 
 
 **** converting existing literates to jorana
+***** TODO easiest route: Add id, and end line to match
+***** TODO trickier: count THINGS in range and only add id on top
 
 *** things:
 **** TODO update links to ids. 
@@ -119,6 +121,15 @@ Getting the relavant transclusion info is a bit convoluted...
 **** TODO allow new heading creation when tc is open
 **** TODO detect comment type from major mode
 **** TODO custom variables for auto-jump-on-edit
+**** TODO magically transclude remote when narrative does not yet have tc added
+**** TODO auto-jump-on-edit could mirror the mark for better translation of intent
+**** TODO inferred narrative file from followed id lookup 
+
+**** TODO transient: adjust COUNT of things at point
+**** TODO file-at-point
+**** TODO select range and transclude, inserting markers or counting things
+**** TODO transcluding from other org files
+
 
 ** implimentation details:
 *** writing an emacs package:

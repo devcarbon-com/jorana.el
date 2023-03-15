@@ -190,9 +190,10 @@ LET-BINDINGS and BODY are the same as in #'let*."
   ;; Let's try to not jar the view too much.
   (let ((current-scroll-pos (count-lines (window-start) (point))))
     (let-alist (transclusion-info)
-      (-goto-marker (marker-of-mirrored-point .mirror-start (-mirror-offset .current-start)))
       ;; try to re-trigger fontlock coloring by scrolling up first.
+      (-goto-marker .mirror-start)
       (recenter -1)
+      (-goto-marker (marker-of-mirrored-point .mirror-start (-mirror-offset .current-start)))
       (recenter current-scroll-pos))))
 
 (defun target-from-line (line) ;<id:1678573021>
@@ -212,9 +213,7 @@ COMMENT-STRING is the comment to use to prefix the id.
 where [anything] is one or more characters. Return an Org mode link to the target."
   (let* ((line-text (buffer-substring (line-beginning-position) (line-end-position)))
          (target (target-from-line line)))
-    (cond (target (substring-no-properties
-
-target))
+    (cond (target (substring-no-properties target))
           (generate-when-missing 
            (let ((target (gen-id-tag)))
              (append-to-line line (concat (or comment-string " ;") target))
@@ -315,7 +314,7 @@ The returned plist contains the following keys:
 
 (transient-define-suffix jorana-set-thing-to-use (thing)
   :description '(lambda ()
-                  (concat "Thing to use:"
+                  (concat "Thing to use: "
                           (propertize (format "%s" jorana-thing-to-use)
                                       'face 'transient-argument)))
   (interactive (completing-read-multiple "Thing-at-point to transclude: " '("sexp" "paragraph" "defun" "list" "sentence")))
@@ -330,9 +329,15 @@ The returned plist contains the following keys:
    ("s" jorana-set-thing-to-use :transient t)]
 
   [["Actions"
-    ("i" "find and include THING" jorana-find-and-insert-transclusion)
+    ("f" "find and include THING" jorana-find-and-insert-transclusion)
     ("a" "Add current THING to narrative" jorana-add-to-narrative)
-    ("e" "Live edit the transclusion" org-transclusion-live-sync-start)]])
+    ("e" "Live edit the transclusion" org-transclusion-live-sync-start)
+    ("j" "Jump between source and transclusion" jorana-jump-to-transclusion-pair)]
+   ["View"
+    ("ta" "Transclude All" org-transclusion-add-all)
+    ("tt" "Transclude link-at-point" org-transclusion-add)
+    ("ra" "Remove all transclusions" org-transclusion-remove-all)
+    ("rr" "Remove transclusion at-point" org-transclusion-remove)]])
 
 (provide 'jorana)
 ;;; jorana.el ends here
