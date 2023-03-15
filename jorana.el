@@ -184,10 +184,10 @@ LET-BINDINGS and BODY are the same as in #'let*."
   "Goto matching transclusion."
   (interactive)
   (refresh-remote-transclusion)
-  (let-alist (transclusion-info)
-    (-goto-marker (marker-of-mirrored-point .mirror-start (-mirror-offset .current-start)))
-    (recenter)
-    (redisplay)))
+  (let ((current-scroll-pos (count-lines (window-start) (point))))
+    (let-alist (transclusion-info)
+      (-goto-marker (marker-of-mirrored-point .mirror-start (-mirror-offset .current-start)))
+      (recenter current-scroll-pos))))
 
 (defun search-target-in-last-used-buffers* (target bullseye buffers) ;<id:1672282124>
   "Search for the contents of TARGET at point in the last 5 used buffers.
