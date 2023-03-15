@@ -137,8 +137,9 @@ We don't just use 'find-file-noselect because it would not include unsaved chang
          ;; When org-transclusion-by is present, we are at source.
          ;; Otherwise we are A. not in a transclusion at all,
          ;; or B. at the transcluder.
-         (mirror-start (or transcluder transcludee))
-         ())))
+         (mirror-start (or transcluder transcludee)))
+    ;; temp until org-trans
+    (when )))
 
 (defun jump-to-transclusion-pair ()
   "Goto matching transclusion."
