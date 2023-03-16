@@ -15,7 +15,30 @@
 
 (defcustom current-narrative nil ;<id:1678875463>
   "Define the narrative for the current project.")
+
+(defvar id-regex (concat "\\(#_\\|;\\|//\\|\\)\\( ?\\)\(?<id:.*?>\)?")
+  "Regex that matches target tag comments.
+
+   Example matches:
+   #_<id:tag>
+   #_(<id:tag>)
+   ; <id:tag>
+   //<id:tag>
+   <id:tag>")
+
 (defvar thing-to-use "sexp")
+
+
+(defmacro alist-of-let* (let-bindings &rest body)
+  "This is the same as #'let*, except it return an alist of the bindings.
+LET-BINDINGS and BODY are the same as in #'let*."
+  `(let* ,let-bindings
+     ,@body
+     (list ,@(mapcar (lambda (binding)
+                       (list #'cons
+                             `',(car binding)
+                             (car binding)))
+                     let-bindings))))
 
 (defun get-or-create-buffer-for-file (filepath)
   "Return the buffer for FILEPATH, or open buffer if it does not yet exist.
@@ -27,14 +50,6 @@ We don't just use 'find-file-noselect because it would not include unsaved chang
   "Return the current time in seconds from the epoch."
   (format-time-string "%s" (current-time)))
 
-(defun gen-id-tag ()
-  (format "<id:%s>" (current-time-in-seconds)))
-
-(defun insert-id-tag () ;<id:1672227875>
-  "Insert a jorana id. Currently, the current time in seconds from the epoch."
-  (interactive)
-  (insert (gen-id-tag)))
-
 (defun get-line-contents (line)
   "Return the line contents for LINE, with leading and trailing whitespace trimmed."
   (let ((start (line-beginning-position line))
@@ -45,15 +60,16 @@ We don't just use 'find-file-noselect because it would not include unsaved chang
   "Replace all non link-safe characters in STRING with underscores."
   (replace-regexp-in-string "[^a-zA-Z0-9_]" "_" string))
 
-(defvar id-regex (concat "\\(#_\\|;\\|//\\|\\)\\( ?\\)\(?<id:.*?>\)?")
-  "Regex that matches target tag comments.
 
-   Example matches:
-   #_<id:tag>
-   #_(<id:tag>)
-   ; <id:tag>
-   //<id:tag>
-   <id:tag>")
+;;; * ids
+
+(defun gen-id-tag ()
+  (format "<id:%s>" (current-time-in-seconds)))
+
+(defun insert-id-tag () ;<id:1672227875>
+  "Insert a jorana id. Currently, the current time in seconds from the epoch."
+  (interactive)
+  (insert (gen-id-tag)))
 
 (defun hide-id-regex () ;<id:1672243157>
   "Hide."
@@ -85,6 +101,21 @@ We don't just use 'find-file-noselect because it would not include unsaved chang
       (add-text-properties (match-beginning 0) (match-end 0) '(invisible t)))
     (set-buffer-modified-p nil)))
 
+;;; * misc
+
+(defun current-non-hidden-buffers ()
+  "Return a list of the current non-hidden buffers."
+  (interactive)
+  (let ((buffers (buffer-list)))
+    (seq-filter (lambda (buffer) (not (string-prefix-p " " (buffer-name buffer)))) buffers)))
+(defun current-project-buffers ()
+  "Return a list of current-non-hidden buffers that are of the current project."
+  (let ((project-dir (projectile-project-root))) 
+    (cl-remove-if-not (lambda (buf)
+                        (and (buffer-file-name buf)
+                             (string-prefix-p project-dir (file-name-directory (buffer-file-name buf))))) 
+                      (current-non-hidden-buffers))))
+
 (defun create-org-link-to-line ()
   "Create an Org mode link to the contents of the line at point."
   (interactive)
@@ -94,6 +125,8 @@ We don't just use 'find-file-noselect because it would not include unsaved chang
          (link-text (format "[[%s::%s][%s]]" file-name line-text line-text)))
     (kill-new link-text)))
 
+;;; * marker utils
+
 (defun marker-at-line (line) ;<id:1672242453>
   "Create a marker at the beginning of LINE in the current buffer."
   (set-marker (make-marker) (line-beginning-position line)))
@@ -101,27 +134,64 @@ We don't just use 'find-file-noselect because it would not include unsaved chang
 (defun marker-at-point (point &rest buffer) ;<id:1672242453>
   "Create a marker at POINT in BUFFER."
   (set-marker (make-marker) point (car (or buffer (current-buffer)))))
-;;
 
 (defun append-to-line (line string)
   "Append STRING to the end of LINE in the current buffer."
   (end-of-line)
   (insert string))
 
+(defun -goto-marker (marker)
+  (switch-to-buffer (marker-buffer marker))
+  (goto-char marker))
+;;; -- 
+;;; * Target
+
 (defun target-at-point ()
   (interactive)
   (extract-target-from-line (line-number-at-pos (point)) t)
   )
 
-(defun current-non-hidden-buffers ()
-  "Return a list of the current non-hidden buffers."
-  (interactive)
-  (let ((buffers (buffer-list)))
-    (seq-filter (lambda (buffer) (not (string-prefix-p " " (buffer-name buffer)))) buffers)))
+(defun target-from-line (line) ;<id:1678573021>
+  "Target from LINE."
+  (let ((on-org-heading (and (eq major-mode 'org-mode)
+                             (org-on-heading-p))))
+    (if on-org-heading
+        (org-entry-put nil "CUSTOM_ID" (org-id-get-create))
+      ;; get id from line if it already exists
+      (prog2 (string-match "\\(<.*>\\)" line-text)
+          (match-string 1 line-text)))))
 
-(defun -goto-marker (marker)
-  (switch-to-buffer (marker-buffer marker))
-  (goto-char marker))
+(defun extract-target-from-line! (line &rest generate-when-missing comment-string) ;<id:1678630244>
+  "Extract the target from LINE using a regex that matches a jorana-id.
+GENERATE-WHEN-MISSING adds an id if one doesn't already exist. 
+COMMENT-STRING is the comment to use to prefix the id.
+where [anything] is one or more characters. Return an Org mode link to the target."
+  (let* ((line-text (buffer-substring (line-beginning-position) (line-end-position)))
+         (target (target-from-line line)))
+    (cond (target (substring-no-properties target))
+          (generate-when-missing 
+           (let ((target (gen-id-tag)))
+             (append-to-line line (concat (or comment-string " ;") target))
+             target))
+          (:no-target-found line))))
+
+(defun create-link-target! () ;<id:1678574962>
+  (let* ((root (projectile-project-root))
+         (file buffer-file-name)
+         (relative-file (concat "file:" (file-relative-name file root)))
+         (link (let* ((line (line-number-at-pos (point-marker)))
+                      (line-point (bounds-of-thing-at-point 'line)))
+                 (list :line line 
+                       :target (extract-target-from-line! line t "  ;")
+                       :text (remove-non-symbol-chars (buffer-substring (car line-point) (- (cdr line-point) 1))))))
+         (line (plist-get link :line))
+         (line-string (plist-get link :text))
+         (target (plist-get link :target)))
+    (list :link (format "[[%s::%s][%s]]" relative-file target line-string)
+          :file file
+          :target target)))
+
+;;; * Jumping
 
 (defun marker-of-mirrored-point (mirror-start cursor-offset)
   "Create marker to matching transclusion."
@@ -130,17 +200,6 @@ We don't just use 'find-file-noselect because it would not include unsaved chang
       (goto-char mirror-start)
       (goto-char (+ (point) cursor-offset))
       (point-marker))))
-
-(defmacro alist-of-let* (let-bindings &rest body)
-  "This is the same as #'let*, except it return an alist of the bindings.
-LET-BINDINGS and BODY are the same as in #'let*."
-  `(let* ,let-bindings
-     ,@body
-     (list ,@(mapcar (lambda (binding)
-                       (list #'cons
-                             `',(car binding)
-                             (car binding)))
-                     let-bindings))))
 
 (defun transclusion-info () ;<id:1678859998>
   (alist-of-let*
@@ -196,54 +255,8 @@ LET-BINDINGS and BODY are the same as in #'let*."
       (-goto-marker (marker-of-mirrored-point .mirror-start (-mirror-offset .current-start)))
       (recenter current-scroll-pos))))
 
-(defun target-from-line (line) ;<id:1678573021>
-  "Target from LINE."
-  (let ((on-org-heading (and (eq major-mode 'org-mode)
-                             (org-on-heading-p))))
-    (if on-org-heading
-        (org-entry-put nil "CUSTOM_ID" (org-id-get-create))
-      ;; get id from line if it already exists
-      (prog2 (string-match "\\(<.*>\\)" line-text)
-          (match-string 1 line-text)))))
 
-(defun extract-target-from-line! (line &rest generate-when-missing comment-string) ;<id:1678630244>
-  "Extract the target from LINE using a regex that matches a jorana-id.
-GENERATE-WHEN-MISSING adds an id if one doesn't already exist. 
-COMMENT-STRING is the comment to use to prefix the id.
-where [anything] is one or more characters. Return an Org mode link to the target."
-  (let* ((line-text (buffer-substring (line-beginning-position) (line-end-position)))
-         (target (target-from-line line)))
-    (cond (target (substring-no-properties target))
-          (generate-when-missing 
-           (let ((target (gen-id-tag)))
-             (append-to-line line (concat (or comment-string " ;") target))
-             target))
-          (:no-target-found line))))
-
-(defun create-link-target! () ;<id:1678574962>
-  (let* ((root (projectile-project-root))
-         (file buffer-file-name)
-         (relative-file (concat "file:" (file-relative-name file root)))
-         (link (let* ((line (line-number-at-pos (point-marker)))
-                      (line-point (bounds-of-thing-at-point 'line)))
-                 (list :line line 
-                       :target (extract-target-from-line! line t "  ;")
-                       :text (remove-non-symbol-chars (buffer-substring (car line-point) (- (cdr line-point) 1))))))
-         (line (plist-get link :line))
-         (line-string (plist-get link :text))
-         (target (plist-get link :target)))
-    (list :link (format "[[%s::%s][%s]]" relative-file target line-string)
-          :file file
-          :target target)))
-
-(defun current-project-buffers ()
-  "Return a list of current-non-hidden buffers that are of the current project."
-  (let ((project-dir (projectile-project-root))) 
-    (cl-remove-if-not (lambda (buf)
-                        (and (buffer-file-name buf)
-                             (string-prefix-p project-dir (file-name-directory (buffer-file-name buf))))) 
-                      (current-non-hidden-buffers))))
-
+;;; * Linking
 (defun find-file-line-link! () ;<id:1672243830>
   "Jump to the most recent project buffer;
 Then prompt user to navigate to the code they want to include.
@@ -300,6 +313,9 @@ The returned plist contains the following keys:
   (interactive)
   (insert (plist-get (find-file-line-link) :link)))
 
+
+
+;;; * User interface
 
 (transient-define-suffix jorana-set-narrative (current-narrative)
   "Set the sentence from minibuffer read"
