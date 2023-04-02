@@ -156,22 +156,26 @@ We don't just use 'find-file-noselect because it would not include unsaved chang
   (let ((on-org-heading (and (eq major-mode 'org-mode)
                              (org-on-heading-p))))
     (if on-org-heading
-        (org-entry-put nil "CUSTOM_ID" (org-id-get-create))
+        (let* ((org-id (org-id-get-create)))
+          (org-entry-put nil "CUSTOM_ID" org-id)
+          (put-text-property 0 (length org-id) :type 'org org-id)
+          org-id)
       ;; get id from line if it already exists
       (prog2 (string-match "\\(<.*>\\)" line-text)
           (match-string 1 line-text)))))
 
-(defun extract-target-from-line! (line &rest generate-when-missing comment-string) ;<id:1678630244>
+(defun extract-target-from-line! (line &optional generate-when-missing comment-string) ;<id:1678630244>
   "Extract the target from LINE using a regex that matches a jorana-id.
 GENERATE-WHEN-MISSING adds an id if one doesn't already exist. 
 COMMENT-STRING is the comment to use to prefix the id.
 where [anything] is one or more characters. Return an Org mode link to the target."
   (let* ((line-text (buffer-substring (line-beginning-position) (line-end-position)))
          (target (target-from-line line)))
-    (cond (target (substring-no-properties target))
+    (cond (target target)
           (generate-when-missing 
            (let ((target (gen-id-tag)))
-             (append-to-line line (concat (or comment-string " ;") target))
+             (unless (eq major-mode 'org-mode)
+               (append-to-line line (concat (or comment-string " ;") target)))
              target))
           (:no-target-found line))))
 
@@ -186,8 +190,10 @@ where [anything] is one or more characters. Return an Org mode link to the targe
                        :text (remove-non-symbol-chars (buffer-substring (car line-point) (- (cdr line-point) 1))))))
          (line (plist-get link :line))
          (line-string (plist-get link :text))
-         (target (plist-get link :target)))
-    (list :link (format "[[%s::%s][%s]]" relative-file target line-string)
+         (target (plist-get link :target))
+         (target-type (get-text-property 0 :type target))
+         (id-or-search (if (eq target-type 'org) "::#" "::")))
+    (list :link (format "[[%s%s%s][%s]]" relative-file id-or-search (substring-no-properties target) line-string)
           :file file
           :target target)))
 
@@ -209,6 +215,7 @@ where [anything] is one or more characters. Return an Org mode link to the targe
                    (with-current-buffer (overlay-buffer tc-pair)
                      (goto-char (overlay-start tc-pair))
                      (point-marker))))
+    ;; If this changes upstream we will need to change this logic accordingly;
     ;; When org-transclusion-by is present, we are at source.
     ;; Otherwise we are A. not in a transclusion at all,
     ;; or B. at the transcluder.
