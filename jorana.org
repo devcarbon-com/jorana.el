@@ -137,9 +137,6 @@ Getting the relavant transclusion info is a bit convoluted at the moment; this c
 
 This is my very first emacs package. 
 
-Very glad for the [[https://github.com/Malabarba/names/][names]] package, makes namespacing possible.
-
-TODO switch to https://github.com/Malabarba/nameless
 
 #+transclude: [[file:jorana.el::<id:1678630244>][_defun_extract_target_from_line___line__rest_generate_when_missing_comment_string_]]  :src elisp :thing-at-point sexp
 
